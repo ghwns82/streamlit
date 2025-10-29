@@ -12,7 +12,7 @@ class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.frame_count = 0
         self.result_label = "..."
-        self.request_interval = 30
+        self.request_interval = 300
         self.lock = threading.Lock()
 
     def send_frame_to_backend(self, img):
@@ -25,7 +25,7 @@ class VideoProcessor(VideoProcessorBase):
             )
             if response.status_code == 200:
                 result = response.json()
-
+                print('success',result)
                 label = data.get("id", "unknown")  # ✅ 대표 모델만 선택
             else:
                 label = "Error"
