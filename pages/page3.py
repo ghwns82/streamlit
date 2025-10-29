@@ -1,149 +1,146 @@
-# app_live_2sec_api_persistent.py
+# app_webrtc_every2s.py
 import time
-import json
 import threading
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
-import streamlit as st
-import requests
 import cv2
 import av
+import requests
+import streamlit as st
 from streamlit_webrtc import webrtc_streamer, WebRtcMode, VideoProcessorBase
 
-st.set_page_config(page_title="실시간 얼굴 식별", page_icon="🧑‍💼")
-st.title("🧑‍💼 실시간 얼굴 식별 (2초마다 API 호출)")
-st.caption("실시간 카메라를 표시하고, 2초마다 FastAPI로 전송하며 최신 응답을 계속 보여줍니다.")
+st.set_page_config(page_title="실시간 얼굴 식별 (2초 주기)", page_icon="🧑‍💼")
+st.title("🧑‍💼 실시간 얼굴 식별")
+st.caption("실시간 카메라를 표시하고, 정확히 2초마다 FastAPI로 프레임을 전송합니다.")
 
-API_URL = "https://fastapi-3uqk.onrender.com/predict"  # 당신이 준 코드 스타일 유지
-show_raw = st.checkbox("서버 원본 응답(JSON)도 표시", value=False)
+# 네가 쓰던 스타일에 맞춰 상수로 둠
+RECOGNITION_API = st.text_input(
+    "FastAPI 엔드포인트",
+    value="https://fastapi-3uqk.onrender.com/predict",
+    help="POST multipart/form-data 로 file=이미지 전송",
+)
+show_raw = st.checkbox("서버 원본 응답(JSON) 표시", value=False)
 
-# -------------------- 응답 파서 --------------------
-def parse_response(data: Any) -> Tuple[Optional[str], Optional[float], Optional[List[Dict[str, Any]]]]:
+# 최신 응답 패널(계속 유지)
+result_box = st.empty()
+raw_box = st.empty()
+
+def _safe_parse_label(data: Any) -> str:
     """
-    다양한 응답 스키마를 유연하게 처리
-    - {"id": "...", "score": 0.97}
-    - {"name": "...", "confidence": 0.97}
-    - {"predictions": [{"name"/"identity", "confidence"/"score"}, ...]}
+    네가 준 로직을 존중:
+    - data.get('predictions', {})에서 'ResNet18' 키를 우선 사용
+    - 없으면 name/id/identity 등을 순서대로 시도
+    - 전혀 없으면 'Unknown'
     """
-    name, conf, candidates = None, None, None
-    if isinstance(data, dict):
-        if "id" in data:
-            name = data.get("id")
-            conf = data.get("score")
-        if name is None and "name" in data:
-            name = data.get("name")
-            conf = data.get("confidence") if conf is None else conf
-        if "predictions" in data and isinstance(data["predictions"], list) and data["predictions"]:
-            candidates = data["predictions"]
-    return name, conf, candidates
+    try:
+        if isinstance(data, dict):
+            preds = data.get("predictions", {})
+            if isinstance(preds, dict):
+                label = preds.get("ResNet18")
+                if label:
+                    return str(label)
 
-# -------------------- 비디오 프로세서 --------------------
+            # 단일 결과 타입 대응
+            for k in ("name", "id", "identity", "label"):
+                if k in data and data[k]:
+                    return str(data[k])
+
+            # 리스트 형태 predictions 대응
+            if isinstance(preds, list) and preds:
+                cand = preds[0]
+                if isinstance(cand, dict):
+                    for k in ("name", "identity", "id", "label"):
+                        if k in cand and cand[k]:
+                            return str(cand[k])
+        return "Unknown"
+    except Exception:
+        return "Unknown"
+
 class VideoProcessor(VideoProcessorBase):
-    SEND_INTERVAL = 2.0  # 요구사항: 2초마다 전송
-
     def __init__(self):
-        self.last_sent = 0.0
+        self.frame_count = 0
+        self.result_label = "..."
+        self.request_interval = 2.0   # ✅ 정확히 2초 간격(초)
+        self.last_sent_ts = 0.0
         self.lock = threading.Lock()
-        self.last_result: Optional[Dict[str, Any]] = None   # 원본 JSON(또는 에러)
-        self.parsed: Tuple[Optional[str], Optional[float], Optional[List[Dict[str, Any]]]] = (None, None, None)
+        self.last_json: Optional[Dict] = None
 
-    def _post(self, img_bgr):
-        ok, buf = cv2.imencode(".jpg", img_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
-        if not ok:
-            return
-        files = {"file": ("frame.jpg", buf.tobytes(), "image/jpeg")}
+    def send_frame_to_backend(self, img):
         try:
-            r = requests.post(API_URL, files=files, timeout=10)
-            data = r.json() if r.ok else {"error": f"HTTP {r.status_code}", "text": r.text}
-        except requests.exceptions.RequestException as e:
+            ok, img_encoded = cv2.imencode(".jpg", img, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
+            if not ok:
+                label = "Error"
+            else:
+                response = requests.post(
+                    RECOGNITION_API,
+                    files={"file": ("frame.jpg", img_encoded.tobytes(), "image/jpeg")},
+                    timeout=10,  # ✅ 넉넉한 타임아웃
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    label = _safe_parse_label(data)
+                else:
+                    data = {"error": f"HTTP {response.status_code}", "text": response.text}
+                    label = "Error"
+        except Exception as e:
+            # 콘솔에 에러 메시지 출력(네가 하던 것 유지)
+            print("🔥 예외 발생:", e)
             data = {"error": "network", "message": str(e)}
+            label = "Error"
 
-        name, conf, cands = parse_response(data)
+        # 결과 업데이트
         with self.lock:
-            self.last_result = data
-            self.parsed = (name, conf, cands)
+            self.result_label = label
+            self.last_json = data
 
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
+        self.frame_count += 1
 
-        # 2초 간격으로만 서버 전송
+        # ✅ 프레임 카운트 대신 '시간' 기준 스로틀링 (정확히 2초마다)
         now = time.time()
-        if now - self.last_sent >= self.SEND_INTERVAL:
-            self.last_sent = now
-            threading.Thread(target=self._post, args=(img.copy(),), daemon=True).start()
+        if now - self.last_sent_ts >= self.request_interval and RECOGNITION_API:
+            self.last_sent_ts = now
+            threading.Thread(target=self.send_frame_to_backend, args=(img.copy(),), daemon=True).start()
 
-        # 현재까지의 최신 응답을 프레임에 오버레이
+        # 현재 라벨을 프레임에 오버레이
         with self.lock:
-            name, conf, cands = self.parsed
+            label_to_display = self.result_label
 
-        y0, dy = 30, 28
-        def put(t, y, col=(0,255,0)):
-            cv2.putText(img, t, (10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.9, col, 2, cv2.LINE_AA)
-
-        if name:
-            txt = f"Result: {name}" + (f" (conf: {conf:.3f})" if isinstance(conf, (int, float)) else "")
-            put(txt, y0)
-        elif cands:
-            put("Candidates:", y0)
-            for i, c in enumerate(cands[:3]):
-                nm = c.get("name") or c.get("identity") or "unknown"
-                sc = c.get("confidence") or c.get("score")
-                put(f"- {nm}" + (f" ({sc:.3f})" if isinstance(sc, (int, float)) else ""), y0 + (i+1)*dy)
-
+        cv2.putText(img, label_to_display, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-# -------------------- WebRTC 위젯 --------------------
+# WebRTC: 실시간 카메라 표시
 ctx = webrtc_streamer(
-    key="live-2sec-api",
+    key="face-recognition",
     mode=WebRtcMode.SENDRECV,
     media_stream_constraints={"video": True, "audio": False},
     video_processor_factory=VideoProcessor,
     async_processing=True,
 )
 
-# -------------------- 지속 표시 패널(항상 최신값 유지) --------------------
-result_box = st.empty()
-raw_box = st.empty()
+# ===== 우측 패널에 최신 응답을 '계속' 표시 (새 응답 오면 즉시 갱신) =====
+# autorefresh로 가볍게 갱신(0.5초마다)
+st.autorefresh(interval=500, key="live_refresh")
 
-# 카메라 실행 중에는 패널을 주기적으로 갱신(새 응답이 오면 즉시 교체 표시)
-if ctx and ctx.state.playing:
-    # 루프가 너무 바쁘지 않도록 약간의 sleep
-    while ctx.state.playing:
-        if ctx.video_processor:
-            with ctx.video_processor.lock:
-                data = ctx.video_processor.last_result
-                name, conf, cands = ctx.video_processor.parsed
+if ctx and ctx.video_processor:
+    with ctx.video_processor.lock:
+        current_label = ctx.video_processor.result_label
+        current_json = ctx.video_processor.last_json
 
-            if data is None:
-                result_box.info("아직 응답 없음 (2초마다 전송)")
-                raw_box.empty()
-            else:
-                if name:
-                    msg = f"식별 결과: **{name}**" + (f" (confidence: {conf:.3f})" if isinstance(conf,(int,float)) else "")
-                    result_box.success(msg)
-                elif cands:
-                    rows = [{
-                        "name": c.get("name") or c.get("identity") or "unknown",
-                        "confidence": c.get("confidence") or c.get("score"),
-                    } for c in cands[:5]]
-                    result_box.subheader("후보 결과 (상위 5)")
-                    result_box.dataframe(rows, use_container_width=True)
-                else:
-                    if isinstance(data, dict) and data.get("error"):
-                        result_box.error(f"요청 실패: {data.get('error')} - {data.get('message') or data.get('text')}")
-                    else:
-                        result_box.warning("응답을 해석할 수 없습니다. 서버 응답 스키마를 확인하세요.")
+    # 라벨은 항상 표시(계속 유지)
+    if current_label and current_label != "...":
+        result_box.success(f"현재 결과: **{current_label}**")
+    else:
+        result_box.info("현재 결과 대기 중... (2초마다 전송)")
 
-                if show_raw:
-                    raw_box.subheader("Raw Response")
-                    try:
-                        raw_box.json(data)
-                    except Exception:
-                        raw_box.write(data)
-                else:
-                    raw_box.empty()
-
-        time.sleep(0.25)  # UI 업데이트 주기(응답은 2초마다, 화면은 부드럽게 4Hz 갱신)
+    # 원본 JSON 옵션
+    if show_raw:
+        raw_box.subheader("Raw Response")
+        if current_json is not None:
+            raw_box.json(current_json)
+        else:
+            raw_box.write({"info": "아직 응답 없음"})
 else:
-    result_box.info("카메라 권한을 허용하고 실행하면 결과가 여기에 계속 표시됩니다.")
+    result_box.info("카메라 권한을 허용하면 실시간 화면이 표시됩니다.")
     raw_box.empty()
