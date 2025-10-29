@@ -21,7 +21,7 @@ class VideoProcessor(VideoProcessorBase):
             response = requests.post(
                 API_URL,
                 files={"file": ("frame.jpg", img_encoded.tobytes(), "image/jpeg")},
-                timeout=10  # ✅ 더 넉넉하게
+                timeout=100  # ✅ 더 넉넉하게
             )
             if response.status_code == 200:
                 result = response.json()
