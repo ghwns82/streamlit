@@ -4,7 +4,8 @@ import requests
 st.set_page_config(page_title="업로드", page_icon="📤")
 st.title("텍스트 + 이미지 → FastAPI /regist")
 
-API_URL = "http://localhost:8080/regist"
+# API_URL = "http://localhost:8080/regist"
+API_URL = "https://fastapi-3uqk.onrender.com//regist"
 
 with st.form("upload_form"):
     text = st.text_input("text (필수)")
