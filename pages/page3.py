@@ -2,83 +2,51 @@ import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode
 import threading, requests, cv2, av, time
 
-API_URL = "https://your.api.endpoint/predict"
-SEND_EVERY_N_FRAMES = 30
+API_URL = "https://fastapi-3uqk.onrender.com/predict"
+   # ⚙️ 여기에 API 주소
+SEND_EVERY_N_FRAMES = 30                        # 몇 프레임마다 전송할지 설정
 
 st.set_page_config(page_title="📷 Webcam + API", layout="wide")
 st.title("📷 실시간 웹캠 → API 응답 표시")
-
-# 0) 주기적 갱신(0.5초) - 필요 없으면 지워도 됨
-st.autorefresh(interval=500, key="live_refresh")
-
-result_placeholder = st.empty()
-status_placeholder = st.empty()  # 상태/오류 출력용
-
 class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.frame_count = 0
+        self.result_label = "..."
+        self.request_interval = 30
         self.lock = threading.Lock()
-        self.latest_result = {"id": "...", "score": "..."}
-        self._last_sent = 0.0
 
-    def _send(self, bgr):
+    def send_frame_to_backend(self, img):
         try:
-            ok, buf = cv2.imencode(".jpg", bgr)
-            if not ok:
-                raise RuntimeError("cv2.imencode failed")
-            r = requests.post(
+            _, img_encoded = cv2.imencode('.jpg', img)
+            response = requests.post(
                 API_URL,
-                files={"file": ("frame.jpg", buf.tobytes(), "image/jpeg")},
-                timeout=6,
+                files={"file": ("frame.jpg", img_encoded.tobytes(), "image/jpeg")},
+                timeout=10  # ✅ 더 넉넉하게
             )
-            if r.status_code == 200:
-                data = r.json()
-                res = {"id": data.get("id", "unknown"),
-                       "score": data.get("score", 0.0)}
+            if response.status_code == 200:
+                result = response.json()
+                predictions = result.get("predictions", {})
+                label = predictions.get("ResNet18", "Unknown")  # ✅ 대표 모델만 선택
             else:
-                res = {"id": f"HTTP{r.status_code}", "score": 0}
+                label = "Error"
         except Exception as e:
-            # 화면에 예외 원인을 바로 띄우기
-            st.exception(e)
-            res = {"id": "exception", "score": str(e)}
-        finally:
-            with self.lock:
-                self.latest_result = res
+            print("🔥 예외 발생:", e)  # ✅ 콘솔에 에러 메시지 출력
+            label = "Error"
+
+        with self.lock:
+            self.result_label = label
 
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
         self.frame_count += 1
 
-        # N프레임마다 API 호출 (백그라운드)
-        if self.frame_count % SEND_EVERY_N_FRAMES == 0 and (time.time()-self._last_sent) > 0.5:
-            self._last_sent = time.time()
-            threading.Thread(target=self._send, args=(img.copy(),), daemon=True).start()
+        if self.frame_count % self.request_interval == 0:
+            threading.Thread(target=self.send_frame_to_backend, args=(img.copy(),)).start()
 
-        # 비디오 오버레이
         with self.lock:
-            label = f"{self.latest_result['id']} ({self.latest_result['score']})"
-        cv2.rectangle(img, (10,10), (420,70), (0,0,0), -1)
-        cv2.putText(img, label, (20,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-        return av.VideoFrame.from_ndarray(img, format="bgr24")
+            label_to_display = self.result_label
 
-ctx = webrtc_streamer(
-    key="live_cam",
-    mode=WebRtcMode.SENDRECV,
-    video_processor_factory=VideoProcessor,
-    media_stream_constraints={"video": True, "audio": False},
-)
+        cv2.putText(img, label_to_display, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+        return frame.from_ndarray(img, format="bgr24")
 
-# ⛔ while True 금지: rerun 구조에 맞게, 렌더 한 번에 '현재 상태'만 보여줌
-try:
-    vp = getattr(ctx, "video_processor", None)
-    if vp is not None:
-        with vp.lock:
-            r = dict(vp.latest_result)
-        result_placeholder.markdown(f"**🧠 ID:** `{r['id']}`  |  **Score:** `{r['score']}`")
-        status_placeholder.info("🎥 스트리밍 중")
-    else:
-        result_placeholder.markdown("**🧠 ID:** `-`  |  **Score:** `-`")
-        status_placeholder.warning("⏳ 스트림 대기/중지 상태")
-except AttributeError as e:
-    # 혹시 모를 접근 타이밍 이슈도 화면에 바로 표시
-    st.exception(e)
+webrtc_streamer(key="face-recognition", video_processor_factory=VideoProcessor)
