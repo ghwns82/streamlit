@@ -11,9 +11,9 @@ st.title("📷 실시간 웹캠 → API 응답 표시")
 class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.frame_count = 0
-        self.result_label = "..."
-        self.request_interval = 30
+        self.latest_result = {"id": "...", "score": "..."}
         self.lock = threading.Lock()
+        self.last_sent_time = 0.0
 
     def send_frame_to_backend(self, img):
         try:
@@ -24,17 +24,19 @@ class VideoProcessor(VideoProcessorBase):
                 timeout=10  # ✅ 더 넉넉하게
             )
             if response.status_code == 200:
-                result = response.json()
-                predictions = result.get("predictions", {})
-                label = predictions.get("ResNet18", "Unknown")  # ✅ 대표 모델만 선택
+                data = response.json()
+                with self.lock:
+                    self.latest_result = {
+                        "id": data.get("id", "unknown"),
+                        "score": data.get("score", 0.0),
+                    }
             else:
-                label = "Error"
-        except Exception as e:
-            print("🔥 예외 발생:", e)  # ✅ 콘솔에 에러 메시지 출력
-            label = "Error"
+                with self.lock:
+                    self.latest_result = {"id": "error", "score": 0}
 
-        with self.lock:
-            self.result_label = label
+        except Exception as e:
+            with self.lock:
+                self.latest_result = {"id": "exception", "score": str(e)}
 
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
@@ -44,9 +46,9 @@ class VideoProcessor(VideoProcessorBase):
             threading.Thread(target=self.send_frame_to_backend, args=(img.copy(),)).start()
 
         with self.lock:
-            label_to_display = self.result_label
+            label = f"{self.latest_result['id']} ({self.latest_result['score']})"
 
-        cv2.putText(img, label_to_display, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+        cv2.putText(img, label, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
         return frame.from_ndarray(img, format="bgr24")
 
 webrtc_streamer(key="face-recognition", video_processor_factory=VideoProcessor)
