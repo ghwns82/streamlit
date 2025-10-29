@@ -31,7 +31,7 @@ class VideoProcessor(VideoProcessorBase):
                 label = "Error"
         except Exception as e:
             print("🔥 예외 발생:", e)  # ✅ 콘솔에 에러 메시지 출력
-            label = "Error"
+            label = "Error except"
 
         with self.lock:
             self.result_label = label
