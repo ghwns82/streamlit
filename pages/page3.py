@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode
 import threading, requests, cv2, av, time
 
-API_URL = "https://fastapi-3uqk.onrender.com/predict"
+API_URL = "127.0.0.1:8080:/predict"
    # ⚙️ 여기에 API 주소
 SEND_EVERY_N_FRAMES = 30                        # 몇 프레임마다 전송할지 설정
 
