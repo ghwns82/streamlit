@@ -2,10 +2,10 @@ import streamlit as st
 import requests
 import os
 
-st.set_page_config(page_title="업로드", page_icon="📤")
-st.title("텍스트 + 이미지 → FastAPI /regist")
+st.set_page_config(page_title="출석체크", page_icon="📤")
+st.title("출석체크확인")
 
-API_URL ="http://220.149.231.136:9404"+'/regist'
+API_URL ="http://220.149.231.136:9404"+'/attendance'
 
 
 with st.form("upload_form"):
@@ -21,10 +21,10 @@ if submitted:
     else:
         try:          
             # 폼 데이터: 키 이름은 반드시 'text'
-            data = {"text": text,'text2':text2}
+            data = {"student_id": text,'student_name':text2}
 
             with st.spinner("전송 중..."):
-                resp = requests.post(API_URL, data=data, files=files, timeout=60)
+                resp = requests.post(API_URL, data=data, timeout=60)
 
             if resp.ok:
                 st.success("성공 🎉")
