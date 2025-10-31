@@ -2,8 +2,9 @@ import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode
 import threading, requests, cv2, av, time
 
-# API_URL = "127.0.0.1:8080:/predict"
-API_URL = "https://fastapi-3uqk.onrender.com//regist"
+API_URL = "http://localhost:8080/predict"
+
+# API_URL = "https://fastapi-3uqk.onrender.com//regist"
    # ⚙️ 여기에 API 주소
 SEND_EVERY_N_FRAMES = 30                        # 몇 프레임마다 전송할지 설정
 
@@ -13,7 +14,7 @@ class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.frame_count = 0
         self.result_label = "..."
-        self.request_interval = 300
+        self.request_interval = 30
         self.lock = threading.Lock()
 
     def send_frame_to_backend(self, img):
@@ -27,7 +28,7 @@ class VideoProcessor(VideoProcessorBase):
             if response.status_code == 200:
                 result = response.json()
                 print('success',result)
-                label = data.get("id", "unknown")  # ✅ 대표 모델만 선택
+                label = result.get("id", "unknown")  # ✅ 대표 모델만 선택
             else:
                 label = "Error"
         except Exception as e:

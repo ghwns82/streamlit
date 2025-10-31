@@ -4,8 +4,8 @@ import requests
 st.set_page_config(page_title="업로드", page_icon="📤")
 st.title("텍스트 + 이미지 → FastAPI /regist")
 
-# API_URL = "http://localhost:8080/regist"
-API_URL = "https://fastapi-3uqk.onrender.com//regist"
+API_URL = "http://localhost:8080/regist"
+# API_URL = "https://fastapi-3uqk.onrender.com//regist"
 
 with st.form("upload_form"):
     text = st.text_input("이름 (필수)")
@@ -27,7 +27,7 @@ if submitted:
                 "file": (image.name, image.getvalue(), image.type or "application/octet-stream")
             }
             # 폼 데이터: 키 이름은 반드시 'text'
-            data = {"text": text}
+            data = {"text": text,'text2':text2}
 
             with st.spinner("전송 중..."):
                 resp = requests.post(API_URL, data=data, files=files, timeout=60)
