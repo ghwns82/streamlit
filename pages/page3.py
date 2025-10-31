@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode
 import threading, requests, cv2, av, time
 
-API_URL = API_KEY = os.getenv("API_URL")+'/predict'
+API_URL ="http://220.149.231.136.9404"+'/predict'
 
 
    # ⚙️ 여기에 API 주소

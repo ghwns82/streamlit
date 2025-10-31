@@ -6,7 +6,7 @@ st.set_page_config(page_title="얼굴 식별", page_icon="🧑‍💼")
 st.title("🧑‍💼 얼굴 식별")
 st.caption("이미지 한 장을 업로드하면 FastAPI로 보내서 누구인지 확인합니다.")
 
-API_URL = API_KEY = os.getenv("API_URL")+'/predict'
+API_URL ="http://220.149.231.136.9404"+'/predict'
 
 show_raw = st.checkbox("서버 원본 응답(JSON)도 표시", value=False)
 
