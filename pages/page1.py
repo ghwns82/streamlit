@@ -8,12 +8,15 @@ st.title("텍스트 + 이미지 → FastAPI /regist")
 API_URL = "https://fastapi-3uqk.onrender.com//regist"
 
 with st.form("upload_form"):
-    text = st.text_input("text (필수)")
+    text = st.text_input("이름 (필수)")
+    text2 = st.text_input("교번 (필수)")
     image = st.file_uploader("file (이미지)", type=["png", "jpg", "jpeg", "webp"])
     submitted = st.form_submit_button("전송")
 
 if submitted:
     if not text:
+        st.error("text는 필수입니다.")
+    elif not text2:
         st.error("text는 필수입니다.")
     elif not image:
         st.error("file(이미지)를 업로드하세요.")
