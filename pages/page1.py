@@ -5,7 +5,7 @@ import os
 st.set_page_config(page_title="업로드", page_icon="📤")
 st.title("텍스트 + 이미지 → FastAPI /regist")
 
-API_URL ="http://220.149.231.136.9404"+'/regist'
+API_URL ="http://220.149.231.136:9404"+'/regist'
 
 
 with st.form("upload_form"):
