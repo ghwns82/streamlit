@@ -1,11 +1,12 @@
 import streamlit as st
 import requests
+import os
 
 st.set_page_config(page_title="업로드", page_icon="📤")
 st.title("텍스트 + 이미지 → FastAPI /regist")
 
-API_URL = "http://localhost:8080/regist"
-# API_URL = "https://fastapi-3uqk.onrender.com//regist"
+API_URL = API_KEY = os.getenv("API_URL")+'/regist'
+
 
 with st.form("upload_form"):
     text = st.text_input("이름 (필수)")
