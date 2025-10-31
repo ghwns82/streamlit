@@ -20,3 +20,8 @@ with col2:
 with col3:
     if st.button("📗 얼굴 검사2"):
         st.switch_page("pages/page3.py")
+
+
+if st.button("📗 출석체크"):
+    st.switch_page("pages/page4.py")
+
