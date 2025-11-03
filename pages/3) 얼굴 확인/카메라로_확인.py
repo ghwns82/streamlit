@@ -1,20 +1,18 @@
 import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode
 import threading, requests, cv2, av, time
+from config import BACK_URL
 
-API_URL ="http://220.149.231.136:9404"+'/predict'
 
-
-   # ⚙️ 여기에 API 주소
+API_URL =BACK_URL+'/predict'
 SEND_EVERY_N_FRAMES = 30                        # 몇 프레임마다 전송할지 설정
 
-st.set_page_config(page_title="📷 Webcam + API", layout="wide")
-st.title("📷 실시간 웹캠 → API 응답 표시")
+st.title("📷 실시간 카메라로 확인")
 class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.frame_count = 0
         self.result_label = "..."
-        self.request_interval = 30
+        self.request_interval = SEND_EVERY_N_FRAMES
         self.lock = threading.Lock()
 
     def send_frame_to_backend(self, img):
@@ -51,4 +49,12 @@ class VideoProcessor(VideoProcessorBase):
         cv2.putText(img, label_to_display, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
         return frame.from_ndarray(img, format="bgr24")
 
-webrtc_streamer(key="face-recognition", video_processor_factory=VideoProcessor)
+webrtc_streamer(key="face-recognition", video_processor_factory=VideoProcessor,
+        media_stream_constraints={
+        "video": {
+            "width": {"ideal": 640},   # 이상적인 해상도
+            "height": {"ideal": 480},
+            "facingMode": "user"       # 전면카메라 (모바일)
+        },
+        "audio": False,
+    },)

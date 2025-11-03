@@ -2,8 +2,8 @@ import streamlit as st
 import glob,os
 
 st.set_page_config(page_title="메인 페이지", page_icon="🏠")
-
-st.title("메인 페이지")
+st.title("🏠 얼굴 인식 출석 시스템")
+st.subheader("메인 페이지")
 st.write("아래에서 원하는 기능을 선택하세요 👇")
 
 for path in sorted(glob.glob('./pages/*')): 

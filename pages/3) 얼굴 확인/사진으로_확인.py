@@ -3,9 +3,7 @@ import requests
 
 from config import BACK_URL
 
-st.set_page_config(page_title="얼굴 식별", page_icon="🧑‍💼")
-
-st.title("🧑‍💼 얼굴 식별")
+st.title("🖼️ 사진으로 얼굴 확인하기")
 st.caption("이미지 한 장을 업로드하면 FastAPI로 보내서 누구인지 확인합니다.")
 
 API_URL =BACK_URL+'/predict'

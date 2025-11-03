@@ -4,8 +4,8 @@ import os
 
 from config import BACK_URL
 
-st.set_page_config(page_title="업로드", page_icon="📤")
-st.title("텍스트 + 이미지 → FastAPI /regist")
+st.title("🖼️ 사진으로 얼굴 등록하기")
+
 
 API_URL =BACK_URL+'/regist'
 
