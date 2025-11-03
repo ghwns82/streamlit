@@ -40,7 +40,7 @@ def fetch_attendance(ID, name, start_date, end_date, start_time, end_time):
     start_t = start_time.strftime("%H:%M:%S") if start_time else "00:00:00"
     end_t = end_time.strftime("%H:%M:%S") if end_time else "23:59:59"
 
-    data = {"ID": ID,'name':name}
+    data = {"ID": ID}
 
     try:
         with st.spinner("출석 데이터 조회 중..."):
