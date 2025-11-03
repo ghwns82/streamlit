@@ -14,8 +14,8 @@ ATTEND_API = f"{API_BASE}/attendance"
 # 1️⃣ 검색 전 정보 입력
 # ---------------------------
 with st.form("query_form"):
-    name = st.text_input("이름 (선택, 영문 권장)")
-    ID = st.text_input("학번 (필수)")
+    # student_name = st.text_input("이름 (선택, 영문 권장)")
+    student_id = st.text_input("학번 (필수)")
     
     col_t1, col_t2 = st.columns(2)
     start_time = col_t1.time_input("시작 시각 (없으면 00:00)", value=None)
@@ -23,7 +23,7 @@ with st.form("query_form"):
 
     col_d1, col_d2 = st.columns(2)
     today = dt.date.today()
-    start_date = col_d1.date_input("조회 시작일", value=today.replace(day=1))
+    start_date = col_d1.date_input("조회 시작일", value=today)
     end_date = col_d2.date_input("조회 종료일", value=today)
 
     submitted = st.form_submit_button("출석 달력보기")
@@ -31,16 +31,12 @@ with st.form("query_form"):
 # ---------------------------
 # 2️⃣ API 통신
 # ---------------------------
-def fetch_attendance(ID, name, start_date, end_date, start_time, end_time):
-    if not ID:
+def fetch_attendance(student_id):
+    if not student_id:
         st.warning("학번은 필수입니다.")
         return []
 
-    # 시간 범위 기본값 (24시간 전체)
-    start_t = start_time.strftime("%H:%M:%S") if start_time else "00:00:00"
-    end_t = end_time.strftime("%H:%M:%S") if end_time else "23:59:59"
-
-    data = {"ID": ID}
+    data = {"student_id": student_id}
 
     try:
         with st.spinner("출석 데이터 조회 중..."):
@@ -146,10 +142,10 @@ def render_calendar(start_date: dt.date, end_date: dt.date, attend_rows: list):
 # 4️⃣ 실행 흐름
 # ---------------------------
 if submitted:
-    if not ID:
+    if not student_id:
         st.error("학번은 필수입니다.")
     else:
-        rows = fetch_attendance(ID, name, start_date, end_date, start_time, end_time)
+        rows = fetch_attendance(student_id)
         if rows:
             st.success(f"총 {len(rows)}건의 출석 데이터 수신 ✅")
         render_calendar(start_date, end_date, rows)

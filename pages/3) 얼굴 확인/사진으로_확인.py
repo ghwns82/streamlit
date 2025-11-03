@@ -13,7 +13,7 @@ show_raw = st.checkbox("서버 원본 응답(JSON)도 표시", value=False)
 image = st.file_uploader("이미지 업로드", type=["jpg", "jpeg", "png", "webp"])
 
 if image:
-    st.image(image, caption="업로드 미리보기", use_column_width=True)
+    st.image(image, caption="업로드 미리보기")
 
 if st.button("식별 요청 보내기"):
     if not image:
