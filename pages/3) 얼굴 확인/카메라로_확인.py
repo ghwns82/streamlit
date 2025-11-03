@@ -5,7 +5,7 @@ from config import BACK_URL
 
 
 API_URL =BACK_URL+'/predict'
-SEND_EVERY_N_FRAMES = 30                        # 몇 프레임마다 전송할지 설정
+SEND_EVERY_N_FRAMES = 100                        # 몇 프레임마다 전송할지 설정
 
 st.title("📷 실시간 카메라로 확인")
 class VideoProcessor(VideoProcessorBase):
@@ -28,7 +28,7 @@ class VideoProcessor(VideoProcessorBase):
                 print('success',result)
                 label = result.get("id", "unknown")  # ✅ 대표 모델만 선택
             else:
-                label = "Error"
+                label = "Many People"
         except Exception as e:
             print("🔥 예외 발생:", e)  # ✅ 콘솔에 에러 메시지 출력
             label = "Error except"

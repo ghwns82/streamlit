@@ -1,27 +1,26 @@
 import streamlit as st
 import requests
 import os
+from config import BACK_URL
 
 st.set_page_config(page_title="출석체크", page_icon="📤")
-st.title("출석체크확인")
+st.title("🕒 출석체크확인")
 
-API_URL ="http://220.149.231.136:9404"+'/attendance'
+API_URL =BACK_URL+'/attendance'
 
 
 with st.form("upload_form"):
-    text = st.text_input("이름 (필수)")
-    text2 = st.text_input("교번 (필수)")
+    name = st.text_input("이름 (필수,영문)")
+    ID = st.text_input("학번 (필수)")
     submitted = st.form_submit_button("전송")
 
 if submitted:
-    if not text:
-        st.error("text는 필수입니다.")
-    elif not text2:
-        st.error("text는 필수입니다.")
+    if not ID:
+        st.error("학번은 필수입니다.")
     else:
         try:          
             # 폼 데이터: 키 이름은 반드시 'text'
-            data = {"student_id": text,'student_name':text2}
+            data = {"student_id": ID,'student_name':name}
 
             with st.spinner("전송 중..."):
                 resp = requests.post(API_URL, data=data, timeout=60)
