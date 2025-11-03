@@ -51,10 +51,5 @@ class VideoProcessor(VideoProcessorBase):
 
 webrtc_streamer(key="face-recognition", video_processor_factory=VideoProcessor,
         media_stream_constraints={
-        "video": {
-            "width": {"ideal": 640},   # 이상적인 해상도
-            "height": {"ideal": 480},
-            "facingMode": "user"       # 전면카메라 (모바일)
-        },
         "audio": False,
     },)
