@@ -19,7 +19,7 @@ API_URL =BACK_URL+'/regist'
 with st.form("upload_form"):
     student_name = st.text_input("이름 (필수, 영문)")
     student_id = st.text_input("교번 (필수)")
-    image = st.file_uploader("file (이미지)", type=["png", "jpg", "jpeg", "webp"])
+    image = img_file
     submitted = st.form_submit_button("전송")
 
 if submitted:
