@@ -20,7 +20,7 @@ if submitted:
     else:
         try:          
             # 폼 데이터: 키 이름은 반드시 'text'
-            data = {"student_id": ID,'student_name':name}
+            data = {"ID": ID,'name':name}
 
             with st.spinner("전송 중..."):
                 resp = requests.post(API_URL, data=data, timeout=60)
