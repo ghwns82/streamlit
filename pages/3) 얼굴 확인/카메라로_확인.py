@@ -29,6 +29,7 @@ class VideoProcessor(VideoProcessorBase):
                 label = result.get("id", "unknown")  # ✅ 대표 모델만 선택
             else:
                 label = "Many People"
+                print(result)
         except Exception as e:
             print("🔥 예외 발생:", e)  # ✅ 콘솔에 에러 메시지 출력
             label = "Error except"
