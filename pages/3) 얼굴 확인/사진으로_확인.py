@@ -31,21 +31,14 @@ if st.button("식별 요청 보내기"):
                     st.subheader("Raw Response")
                     st.json(data)
 
-                # 다양한 응답 형태를 유연하게 처리
-                # 1) {"name": "...", "confidence": 0.97}
-                # 2) {"predictions": [{"name": "...", "confidence": 0.97}, ...]}
-                # 3) {"identity": "...", "score": 0.97} 등
-
                 name = None
                 conf = None
                 candidates = None
 
                 if isinstance(data, dict):
-                    if "id" in data:
-                        name = data.get("id")
+                    if "student_id" in data:
+                        name = data.get("student_id")
                         conf = data.get("score")
-                    elif "predictions" in data and isinstance(data["predictions"], list) and data["predictions"]:
-                        candidates = data["predictions"]
                     else:
                         candidates = None
                 else:
@@ -54,16 +47,16 @@ if st.button("식별 요청 보내기"):
                 if name:
                     st.success(f"식별 결과: **{name}**"
                                + (f"  (confidence: {conf:.3f})" if isinstance(conf, (int, float)) else ""))
-                elif candidates:
-                    st.subheader("후보 결과")
-                    # 상위 5개만 표시
-                    rows = []
-                    for c in candidates[:5]:
-                        rows.append({
-                            "name": c.get("name") or c.get("identity") or "unknown",
-                            "confidence": c.get("confidence") or c.get("score"),
-                        })
-                    st.dataframe(rows, use_container_width=True)
+                # elif candidates:
+                #     st.subheader("후보 결과")
+                #     # 상위 5개만 표시
+                #     rows = []
+                #     for c in candidates[:5]:
+                #         rows.append({
+                #             "name": c.get("name") or c.get("identity") or "unknown",
+                #             "confidence": c.get("confidence") or c.get("score"),
+                #         })
+                #     st.dataframe(rows, use_container_width=True)
                 else:
                     st.warning("응답을 해석할 수 없습니다. 서버 응답 스키마를 확인하세요.")
         except requests.exceptions.RequestException as e:

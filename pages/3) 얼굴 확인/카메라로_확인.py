@@ -26,7 +26,7 @@ class VideoProcessor(VideoProcessorBase):
             if response.status_code == 200:
                 result = response.json()
                 print('success',result)
-                label = result.get("id", "unknown")  # ✅ 대표 모델만 선택
+                label = result.get("student_id", "unknown")  
             else:
                 label = "Many People"
                 print(response.json())

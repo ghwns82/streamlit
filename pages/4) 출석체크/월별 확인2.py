@@ -11,9 +11,6 @@ st.title("🕒 출석 관리")
 API_BASE = BACK_URL.rstrip("/")
 ATTEND_API = f"{API_BASE}/attendance"
 
-# ---------------------------
-# 1) 출석 인정 시간 범위 설정
-# ---------------------------
 with st.expander("⏱️ 출석 인정 시간 범위 설정", expanded=True):
     col_t1, col_t2 = st.columns(2)
     start_time = col_t1.time_input("시작 시각", value=dt.time(9, 0))
@@ -26,9 +23,6 @@ with st.expander("⏱️ 출석 인정 시간 범위 설정", expanded=True):
         student_id = st.text_input("학번 (필수)")
         submitted = st.form_submit_button("전송")
 
-# ---------------------------
-# 3) 달력으로 출석 현황 보기
-# ---------------------------
 st.subheader("📅 달력으로 출석 확인")
 
 # 기본 조회 기간: 최근 30일

@@ -17,15 +17,15 @@ API_URL =BACK_URL+'/regist'
 
 
 with st.form("upload_form"):
-    name = st.text_input("이름 (필수, 영문)")
-    ID = st.text_input("교번 (필수)")
-    image = img_file
+    student_name = st.text_input("이름 (필수, 영문)")
+    student_id = st.text_input("교번 (필수)")
+    image = st.file_uploader("file (이미지)", type=["png", "jpg", "jpeg", "webp"])
     submitted = st.form_submit_button("전송")
 
 if submitted:
-    if not name:
-        st.error("name 필수입니다.")
-    elif not ID:
+    if not student_name:
+        st.error("이름 필수입니다.")
+    elif not student_id:
         st.error("학번(교번)은 필수입니다.")
     elif not image:
         st.error("file(이미지)를 업로드하세요.")
@@ -36,7 +36,7 @@ if submitted:
                 "file": (image.name, image.getvalue(), image.type or "application/octet-stream")
             }
             # 폼 데이터: 
-            data = {"name": name,'ID':ID}
+            data = {"student_name": student_name,'student_id':student_id}
 
             with st.spinner("전송 중..."):
                 resp = requests.post(API_URL, data=data, files=files, timeout=60)
