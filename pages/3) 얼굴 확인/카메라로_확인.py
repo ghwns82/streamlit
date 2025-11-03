@@ -51,5 +51,8 @@ class VideoProcessor(VideoProcessorBase):
 
 webrtc_streamer(key="face-recognition", video_processor_factory=VideoProcessor,
         media_stream_constraints={
+        "video": {
+            "facingMode": "user"       # 전면카메라 (모바일)
+        },
         "audio": False,
     },)
