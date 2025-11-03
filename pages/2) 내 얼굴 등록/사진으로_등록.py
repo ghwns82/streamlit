@@ -2,23 +2,25 @@ import streamlit as st
 import requests
 import os
 
+from config import BACK_URL
+
 st.set_page_config(page_title="업로드", page_icon="📤")
 st.title("텍스트 + 이미지 → FastAPI /regist")
 
-API_URL ="http://220.149.231.136:9404"+'/regist'
+API_URL =BACK_URL+'/regist'
 
 
 with st.form("upload_form"):
-    text = st.text_input("이름 (필수)")
-    text2 = st.text_input("교번 (필수)")
+    name = st.text_input("이름 (필수, 영문)")
+    ID = st.text_input("교번 (필수)")
     image = st.file_uploader("file (이미지)", type=["png", "jpg", "jpeg", "webp"])
     submitted = st.form_submit_button("전송")
 
 if submitted:
-    if not text:
-        st.error("text는 필수입니다.")
-    elif not text2:
-        st.error("text는 필수입니다.")
+    if not name:
+        st.error("name 필수입니다.")
+    elif not ID:
+        st.error("학번(교번)은 필수입니다.")
     elif not image:
         st.error("file(이미지)를 업로드하세요.")
     else:
@@ -27,8 +29,8 @@ if submitted:
             files = {
                 "file": (image.name, image.getvalue(), image.type or "application/octet-stream")
             }
-            # 폼 데이터: 키 이름은 반드시 'text'
-            data = {"text": text,'text2':text2}
+            # 폼 데이터: 
+            data = {"name": name,'ID':ID}
 
             with st.spinner("전송 중..."):
                 resp = requests.post(API_URL, data=data, files=files, timeout=60)
@@ -36,7 +38,7 @@ if submitted:
             if resp.ok:
                 st.success("성공 🎉")
                 st.json(resp.json())
-                st.image(image, caption="업로드 미리보기", use_column_width=True)
+                st.image(image, caption="업로드 미리보기")
             else:
                 st.error(f"실패: {resp.status_code}\n{resp.text}")
         except requests.exceptions.RequestException as e:
