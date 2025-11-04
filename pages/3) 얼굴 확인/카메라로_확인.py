@@ -26,7 +26,9 @@ class VideoProcessor(VideoProcessorBase):
             if response.status_code == 200:
                 result = response.json()
                 print('success',result)
-                label = result.get("student_id", "unknown")  
+                label = result.get("student_name", "unknown") 
+            elif response.status_code == 204:
+                label = '...' 
             else:
                 label = "Many People"
                 print(response.json())
