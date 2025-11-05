@@ -161,7 +161,7 @@ if submitted:
     if not student_id:
         st.error("학번은 필수입니다.")
     else:
-        rows = fetch_attendance(student_id)
+        rows = fetch_attendance(student_id, start_date, end_date, start_time, end_time)
         if rows:
             st.success(f"총 {len(rows)}건의 출석 데이터 수신 ✅")
         render_calendar(start_date, end_date, rows)
