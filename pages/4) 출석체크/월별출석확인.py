@@ -39,19 +39,19 @@ def fetch_attendance(student_id, start_date, end_date, start_time, end_time):
     # 기본 시간 보정: 시작 미선택 → 00:00, 종료 미선택 → 23:59:59
     start_time = start_time or time(0, 0, 0)
     end_time   = end_time   or time(23, 59, 59)
-    # 날짜 + 시간 결합
-    start_dt = datetime.combine(start_date, start_time)
-    end_dt   = datetime.combine(end_date,   end_time)
-    # 유효성 검사
-    if end_dt < start_dt:
-        st.warning("조회 종료 시각이 시작 시각보다 빠릅니다. 범위를 다시 설정해주세요.")
+    
+    # 유효성 검사 (날짜 범위만)
+    if end_date < start_date:
+        st.warning("조회 종료 날짜가 시작 날짜보다 빠릅니다. 범위를 다시 설정해주세요.")
         return []
 
-    # 서버로 보낼 페이로드 (ISO8601 문자열 권장)
+    # 서버로 보낼 페이로드: 날짜/시간을 분리해서 전송
     data = {
         "student_id": student_id,
-        "start": start_dt.isoformat(),
-        "end":   end_dt.isoformat(),
+        "start_date": start_date.isoformat(),               # YYYY-MM-DD
+        "end_date":   end_date.isoformat(),                 # YYYY-MM-DD
+        "start_time": start_time.strftime("%H:%M:%S"),      # HH:MM:SS
+        "end_time":   end_time.strftime("%H:%M:%S"),        # HH:MM:SS
     }
 
     try:
