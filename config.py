@@ -1,1 +1,3 @@
-BACK_URL ="http://220.149.231.136:9404"
+import os
+BACK_URL = os.getenv('BACK_URL')
+from dotenv import load_dotenv
