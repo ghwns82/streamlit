@@ -6,7 +6,7 @@ from config import BACK_URL
 st.set_page_config(page_title="출석체크", page_icon="📤")
 st.title("🕒 디버그용 출석체크확인")
 
-API_URL =BACK_URL+'/attendance'
+API_URL =BACK_URL+'/attendance_debug'
 
 
 with st.form("upload_form"):

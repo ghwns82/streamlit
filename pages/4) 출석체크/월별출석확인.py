@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from datetime import datetime, time
 import datetime as dt
 import calendar
 from config import BACK_URL
@@ -8,7 +9,7 @@ st.set_page_config(page_title="월별 출석 확인", page_icon="📅")
 st.title("📅 월별 출석 확인")
 
 API_BASE = BACK_URL.rstrip("/")
-ATTEND_API = f"{API_BASE}/attendance"
+ATTEND_API = f"{API_BASE}/attendance_month"
 
 # ---------------------------
 # 1️⃣ 검색 전 정보 입력
@@ -31,12 +32,27 @@ with st.form("query_form"):
 # ---------------------------
 # 2️⃣ API 통신
 # ---------------------------
-def fetch_attendance(student_id):
+def fetch_attendance(student_id, start_date, end_date, start_time, end_time):
     if not student_id:
         st.warning("학번은 필수입니다.")
         return []
+    # 기본 시간 보정: 시작 미선택 → 00:00, 종료 미선택 → 23:59:59
+    start_time = start_time or time(0, 0, 0)
+    end_time   = end_time   or time(23, 59, 59)
+    # 날짜 + 시간 결합
+    start_dt = datetime.combine(start_date, start_time)
+    end_dt   = datetime.combine(end_date,   end_time)
+    # 유효성 검사
+    if end_dt < start_dt:
+        st.warning("조회 종료 시각이 시작 시각보다 빠릅니다. 범위를 다시 설정해주세요.")
+        return []
 
-    data = {"student_id": student_id}
+    # 서버로 보낼 페이로드 (ISO8601 문자열 권장)
+    data = {
+        "student_id": student_id,
+        "start": start_dt.isoformat(),
+        "end":   end_dt.isoformat(),
+    }
 
     try:
         with st.spinner("출석 데이터 조회 중..."):
@@ -44,8 +60,8 @@ def fetch_attendance(student_id):
         if not resp.ok:
             st.error(f"서버 오류: {resp.status_code} {resp.text}")
             return []
-        data = resp.json()
-        rows = data.get("rows", [])
+        payload = resp.json()
+        rows = payload.get("rows", [])
         return rows
     except requests.exceptions.RequestException as e:
         st.error(f"네트워크 오류: {e}")
