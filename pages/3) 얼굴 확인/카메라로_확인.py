@@ -28,8 +28,7 @@ class VideoProcessor(VideoProcessorBase):
                 print('success',result)
                 who=result.get("student_name", "unknown") 
                 cscore = round(result.get('score','-1'),2)
-                label = f'''{who}
-{cscore}'''
+                label = [who,cscore]
             elif response.status_code == 204:
                 label = '...' 
             else:
@@ -52,7 +51,8 @@ class VideoProcessor(VideoProcessorBase):
         with self.lock:
             label_to_display = self.result_label
 
-        cv2.putText(img, label_to_display, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+        for i,v in enumerate(label_to_display):
+            cv2.putText(img, i, (30, 50+i*30), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
         return frame.from_ndarray(img, format="bgr24")
 
 webrtc_streamer(key="face-recognition", video_processor_factory=VideoProcessor,
