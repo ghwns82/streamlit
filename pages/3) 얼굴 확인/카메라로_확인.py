@@ -27,8 +27,9 @@ class VideoProcessor(VideoProcessorBase):
                 result = response.json()
                 print('success',result)
                 who=result.get("student_name", "unknown") 
-                cscore = result.get('score','-1')
-                label = f'{who}\n{cscore}'
+                cscore = round(result.get('score','-1'),2)
+                label = f'''{who}
+{cscore}'''
             elif response.status_code == 204:
                 label = '...' 
             else:
