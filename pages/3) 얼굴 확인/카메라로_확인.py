@@ -52,7 +52,7 @@ class VideoProcessor(VideoProcessorBase):
             label_to_display = self.result_label
 
         for i,v in enumerate(label_to_display):
-            cv2.putText(img, i, (30, 50+i*30), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+            cv2.putText(img, v, (30, 50+i*30), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
         return frame.from_ndarray(img, format="bgr24")
 
 webrtc_streamer(key="face-recognition", video_processor_factory=VideoProcessor,
