@@ -9,7 +9,6 @@ certifi==2025.10.5
 cffi==2.0.0
 charset-normalizer==3.4.4
 click==8.3.0
-contourpy @ file:///croot/contourpy_1732540045555/work
 cryptography==46.0.3
 cycler @ file:///tmp/build/80754af9/cycler_1637851556182/work
 dnspython==2.8.0
