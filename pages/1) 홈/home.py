@@ -6,8 +6,10 @@ st.title("🏠 얼굴 인식 출석 시스템")
 st.subheader("메인 페이지")
 st.write("아래에서 원하는 기능을 선택하세요 👇")
 
-for path in sorted(glob.glob('./pages/*')): 
+for i,path in enumerate(sorted(glob.glob('./pages/*'))): 
     if not os.path.isdir(path):
+        continue
+    if i>1 and not st.session_state["is_admin"]:
         continue
     menu = path.replace('./pages/','')[2:]
     if '홈' in menu:

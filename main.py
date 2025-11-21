@@ -35,7 +35,7 @@ for i,path in enumerate(sorted(glob.glob('./pages/*'))):
     if not os.path.isdir(path):
         continue
     if i>1 and not st.session_state["is_admin"]:
-            continue
+        continue
     menu = path.replace('./pages/','')
     pages[menu] = []
     

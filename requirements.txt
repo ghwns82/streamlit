@@ -9,8 +9,11 @@ certifi==2025.10.5
 cffi==2.0.0
 charset-normalizer==3.4.4
 click==8.3.0
+contourpy @ file:///croot/contourpy_1732540045555/work
 cryptography==46.0.3
+cycler @ file:///tmp/build/80754af9/cycler_1637851556182/work
 dnspython==2.8.0
+fonttools @ file:///home/task_175975444451365/conda-bld/fonttools_1759754870571/work
 gitdb==4.0.12
 GitPython==3.1.45
 google-crc32c==1.7.1
@@ -19,11 +22,16 @@ ifaddr==0.2.0
 Jinja2==3.1.6
 jsonschema==4.25.1
 jsonschema-specifications==2025.9.1
+kiwisolver @ file:///croot/kiwisolver_1737039087198/work
 MarkupSafe==3.0.3
+matplotlib==3.10.6
+mkl-service==2.5.2
+mkl_fft @ file:///home/task_176159252575002/conda-bld/mkl_fft_1761592901585/work
+mkl_random @ file:///home/task_176159293813909/conda-bld/mkl_random_1761592952512/work
 narwhals==2.10.0
-numpy==2.2.6
+numpy @ file:///home/task_176157872663408/conda-bld/numpy_and_numpy_base_1761579342634/work/dist/numpy-2.2.5-cp310-cp310-linux_x86_64.whl#sha256=fb5b85b589f86e6404be6a37347b98be70b32c4ae837bb26e1180e9f9a7fb718
 opencv-python-headless==4.12.0.88
-packaging==25.0
+packaging @ file:///home/task_176104877067765/conda-bld/packaging_1761049113113/work
 pandas==2.3.3
 pillow==11.3.0
 protobuf==6.33.0
@@ -33,19 +41,25 @@ pydeck==0.9.1
 pyee==13.0.0
 pylibsrtp==1.0.0
 pyOpenSSL==25.3.0
-python-dateutil==2.9.0.post0
+pyparsing @ file:///croot/pyparsing_1731445506121/work
+PyQt6==6.9.1
+PyQt6_sip @ file:///home/task_175751008770153/conda-bld/pyqt-split_1757511022671/work/pyqt_sip
+python-dateutil @ file:///croot/python-dateutil_1716495738603/work
 python-dotenv==1.2.1
 pytz==2025.2
 referencing==0.37.0
 requests==2.32.5
 rpds-py==0.28.0
-six==1.17.0
+sip @ file:///croot/sip_1756223371714/work
+six @ file:///croot/six_1744271502820/work
 smmap==5.0.2
 streamlit==1.50.0
+streamlit-calendar==1.4.0
 streamlit-webrtc==0.63.11
 tenacity==9.1.2
 toml==0.10.2
-tornado==6.5.2
+tomli @ file:///croot/tomli_1753774587605/work
+tornado @ file:///croot/tornado_1748956929273/work
 typing_extensions==4.15.0
 tzdata==2025.2
 urllib3==2.5.0
